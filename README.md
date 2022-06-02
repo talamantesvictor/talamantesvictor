@@ -53,8 +53,8 @@
 [![My Skills](https://skillicons.dev/icons?i=linux)](https://en.wikipedia.org/wiki/Linux) <br>
 ... and the others of course.
 
-
 <br>
-Now you know me a bit more :) <br>
-**I'm looking forward to collaborating with you!** <br>
-- Victor
+
+> Now you know me a bit more :) <br>
+I'm looking forward to collaborating with you! <br>
+\- Victor
