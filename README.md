@@ -1,14 +1,14 @@
 ```json
 { 
   "name": "Victor Talamantes",
-  "country": "Mexico",
+  "location": "Mexico",
   "company": {
     "title": "Binmatter",
     "job": "CEO",
     "description": "Software development company that primary focuses on mobile apps and video games"
   },
   "hobbies": [
-    "Learn new skills", "Other"
+    "Learning new skills", "Watching movies", "Playing video games", "Other"
   ]
 }
 ```
