@@ -1,4 +1,9 @@
 #!/bin/bash
+# Easily add server configurations to nginx and generate an SSL certificate.
+# Dependencies:
+# - nginx
+# - certbot
+# - systemctl
 
 NGINX_PATH=/etc/nginx
 LETSENCRYPT_PATH=/etc/letsencrypt
@@ -177,3 +182,40 @@ server {
 }
 "
 
+FILE=$NGINX_PATH/sites-available/$DOMAIN
+
+if [ -f "$FILE" ]; then
+   # If file exists
+    echo "$FILE already exists. Skip nginx configuration."
+else
+   #If file doesn't exists
+   echo "- adding temp configuration..."
+   echo "$CONFIG_TEMP" > $FILE
+   certbot certonly -d $DOMAIN --nginx
+   echo "- let's encrypt certificate generated."
+   rm $FILE
+   echo "- creating nginx configuration..."
+   if [ -z "$PORT" ]; then
+      echo "$CONFIG_LOCAL" > $FILE
+      if [ -z "$SECURE" ]; then
+         echo "$CONFIG_STRICT_OFF_LOCAL" >> $FILE
+      else 
+         echo "$CONFIG_STRICT_ON" >> $FILE
+      fi
+   else
+      echo "$CONFIG_DOCKER" > $FILE
+      if [ -z "$SECURE" ]; then
+         echo "$CONFIG_STRICT_OFF_DOCKER" >> $FILE
+      else 
+         echo "$CONFIG_STRICT_ON" >> $FILE
+      fi
+   fi
+   if [ ! -z "$NAKED" ]; then
+      echo "$CONFIG_NAKED" >> $FILE
+   fi
+   ln -s $FILE $NGINX_PATH/sites-enabled
+   echo "- $DOMAIN was added successfully."
+   systemctl restart nginx
+   echo "- nginx restarted."
+   echo "- process complete."
+fi
