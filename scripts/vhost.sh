@@ -1,6 +1,7 @@
 #!/bin/bash
 
-NGINX_PATH=/etc/nginx/
+NGINX_PATH=/etc/nginx
+LETSENCRYPT_PATH=/etc/letsencrypt
 
 function help {
    echo "Usage: vhost <action> [options...] <target_domain>" 
@@ -42,6 +43,13 @@ fi
 ACTION=$1
 DOMAIN=${@: -1}
 
+
+if [ -z "$DOMAIN" ]; then
+   help
+   echo "target domain is missing."
+   exit 1;
+fi
+
 if [[ $ACTION == 'add' ]]; then
    # read options and show help if any doesn't belong to the script
    optstring="p:n:s"
@@ -56,6 +64,34 @@ if [[ $ACTION == 'add' ]]; then
          ?) help;;
       esac
    done
+else
+   FILE_FOUND=0
+
+   # Remove file from sites-enabled
+   if [ -L "$NGINX_PATH/sites-enabled/$DOMAIN" ]; then
+      rm $NGINX_PATH/sites-enabled/$DOMAIN
+      echo "- removed from sites-enabled."
+      FILE_FOUND=1;
+   fi
+   # Remove file from sites-available
+   if [ -f "$NGINX_PATH/sites-available/$DOMAIN" ]; then
+      rm $NGINX_PATH/sites-available/$DOMAIN
+      echo "- removed from sites-available."
+      FILE_FOUND=1;
+   fi
+
+   # Restart nginx
+   if [ $FILE_FOUND = 1 ]; then
+      # Remove certificates
+      if [ -f "$LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem" ]; then
+         certbot delete --cert-name $DOMAIN
+         echo "- removed SSL certificates."
+      fi
+      echo "- restarting nginx..."
+      systemctl restart nginx
+   fi
+
+   echo "- process completed."
 fi
 
 # nginx templates
@@ -80,10 +116,10 @@ server {
 		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
 	}
 	listen 443 ssl;
-	ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem; 
-	ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem; 
-	include /etc/letsencrypt/options-ssl-nginx.conf; 
-	ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; 
+	ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
+	ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
+	include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
+	ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
 }
 "
 CONFIG_LOCAL="
@@ -93,10 +129,10 @@ server {
 	index index.html;
 	
 	listen 443 ssl; # managed by Certbot
-	ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem; 
-	ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem; 
-	include /etc/letsencrypt/options-ssl-nginx.conf; 
-	ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; 
+	ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
+	ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
+	include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
+	ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
 }
 "
 CONFIG_STRICT_OFF_DOCKER="
@@ -134,10 +170,10 @@ server {
 	listen 80;
 	listen 443;
 
-	ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem; 
-	ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem; 
-	include /etc/letsencrypt/options-ssl-nginx.conf; 
-	ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; 
+	ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
+	ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
+	include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
+	ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
 }
 "
 
