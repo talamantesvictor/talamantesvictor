@@ -56,89 +56,6 @@ if [ -z "$DOMAIN" ]; then
 fi
 
 
-# nginx templates
-# ---------------
-
-CONFIG_TEMP="
-server {
-   server_name $DOMAIN;
-   root /var/www/404;
-   index index.html
-   listen 80;
-}
-"
-CONFIG_DOCKER="
-server {
-   server_name $DOMAIN;
-   location / {
-      proxy_pass http://localhost:$PORT;
-		proxy_set_header Host \$http_host;
-		proxy_set_header X-Real-IP \$remote_addr;
-		proxy_set_header X-Forwarded-Proto \$scheme;
-		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-	}
-	listen 443 ssl;
-	ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
-	ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
-	include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
-	ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
-}
-"
-CONFIG_LOCAL="
-server {
-	server_name $DOMAIN;
-	root /var/www/$DOMAIN;
-	index index.html;
-	
-	listen 443 ssl; # managed by Certbot
-	ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
-	ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
-	include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
-	ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
-}
-"
-CONFIG_STRICT_OFF_DOCKER="
-server {
-	server_name $DOMAIN;
-	location / {
-		proxy_pass http://localhost:$PORT;
-		proxy_set_header Host \$http_host;
-		proxy_set_header X-Real-IP \$remote_addr;
-		proxy_set_header X-Forwarded-Proto \$scheme;
-		proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-	}
-	listen 80;
-}
-"
-CONFIG_STRICT_OFF_LOCAL="
-server {
-	server_name $DOMAIN;
-	root /var/www/$DOMAIN;
-	index index.html;
-	listen 80;
-}
-"
-CONFIG_STRICT_ON="
-server {
-	server_name $DOMAIN;
-	return 301 https://\$host\$request_uri;
-	listen 80;
-}
-"
-CONFIG_NAKED="
-server {
-	server_name $NAKED;
-	return 301 https://www.\$host\$request_uri;
-	listen 80;
-	listen 443;
-
-	ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
-	ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
-	include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
-	ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
-}
-"
-
 if [[ $ACTION == 'add' ]]; then
    # read options and show help if any doesn't belong to the script
    optstring="p:n:s"
@@ -154,6 +71,88 @@ if [[ $ACTION == 'add' ]]; then
       esac
    done
 
+   # nginx templates
+   # ---------------
+
+   CONFIG_TEMP="
+   server {
+      server_name $DOMAIN;
+      root /var/www/404;
+      index index.html
+      listen 80;
+   }
+   "
+   CONFIG_DOCKER="
+   server {
+      server_name $DOMAIN;
+      location / {
+         proxy_pass http://localhost:$PORT;
+         proxy_set_header Host \$http_host;
+         proxy_set_header X-Real-IP \$remote_addr;
+         proxy_set_header X-Forwarded-Proto \$scheme;
+         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      }
+      listen 443 ssl;
+      ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
+      ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
+      include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
+      ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
+   }
+   "
+   CONFIG_LOCAL="
+   server {
+      server_name $DOMAIN;
+      root /var/www/$DOMAIN;
+      index index.html;
+      
+      listen 443 ssl; # managed by Certbot
+      ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
+      ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
+      include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
+      ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
+   }
+   "
+   CONFIG_STRICT_OFF_DOCKER="
+   server {
+      server_name $DOMAIN;
+      location / {
+         proxy_pass http://localhost:$PORT;
+         proxy_set_header Host \$http_host;
+         proxy_set_header X-Real-IP \$remote_addr;
+         proxy_set_header X-Forwarded-Proto \$scheme;
+         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      }
+      listen 80;
+   }
+   "
+   CONFIG_STRICT_OFF_LOCAL="
+   server {
+      server_name $DOMAIN;
+      root /var/www/$DOMAIN;
+      index index.html;
+      listen 80;
+   }
+   "
+   CONFIG_STRICT_ON="
+   server {
+      server_name $DOMAIN;
+      return 301 https://\$host\$request_uri;
+      listen 80;
+   }
+   "
+   CONFIG_NAKED="
+   server {
+      server_name $NAKED;
+      return 301 https://www.\$host\$request_uri;
+      listen 80;
+      listen 443;
+
+      ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
+      ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
+      include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
+      ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
+   }
+   "
 
    FILE=$NGINX_PATH/sites-available/$DOMAIN
 
