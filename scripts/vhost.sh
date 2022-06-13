@@ -55,49 +55,6 @@ if [ -z "$DOMAIN" ]; then
    exit 1;
 fi
 
-if [[ $ACTION == 'add' ]]; then
-   # read options and show help if any doesn't belong to the script
-   optstring="p:n:s"
-   shift
-   while getopts ${optstring} option; do
-      OPTIND=1
-      shift
-      case "${option}" in
-         p) PORT=$1; shift;;
-         n) NAKED=$1; shift;;
-         s) SECURE=$1; shift;;
-         ?) help;;
-      esac
-   done
-else
-   FILE_FOUND=0
-
-   # Remove file from sites-enabled
-   if [ -L "$NGINX_PATH/sites-enabled/$DOMAIN" ]; then
-      rm $NGINX_PATH/sites-enabled/$DOMAIN
-      echo "- removed from sites-enabled."
-      FILE_FOUND=1;
-   fi
-   # Remove file from sites-available
-   if [ -f "$NGINX_PATH/sites-available/$DOMAIN" ]; then
-      rm $NGINX_PATH/sites-available/$DOMAIN
-      echo "- removed from sites-available."
-      FILE_FOUND=1;
-   fi
-
-   # Restart nginx
-   if [ $FILE_FOUND = 1 ]; then
-      # Remove certificates
-      if [ -f "$LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem" ]; then
-         certbot delete --cert-name $DOMAIN
-         echo "- removed SSL certificates."
-      fi
-      echo "- restarting nginx..."
-      systemctl restart nginx
-   fi
-
-   echo "- process completed."
-fi
 
 # nginx templates
 # ---------------
@@ -182,40 +139,88 @@ server {
 }
 "
 
-FILE=$NGINX_PATH/sites-available/$DOMAIN
+if [[ $ACTION == 'add' ]]; then
+   # read options and show help if any doesn't belong to the script
+   optstring="p:n:s"
+   shift
+   while getopts ${optstring} option; do
+      OPTIND=1
+      shift
+      case "${option}" in
+         p) PORT=$1; shift;;
+         n) NAKED=$1; shift;;
+         s) SECURE=$1; shift;;
+         ?) help;;
+      esac
+   done
 
-if [ -f "$FILE" ]; then
-   # If file exists
-    echo "$FILE already exists. Skip nginx configuration."
-else
-   #If file doesn't exists
-   echo "- adding temp configuration..."
-   echo "$CONFIG_TEMP" > $FILE
-   certbot certonly -d $DOMAIN --nginx
-   echo "- let's encrypt certificate generated."
-   rm $FILE
-   echo "- creating nginx configuration..."
-   if [ -z "$PORT" ]; then
-      echo "$CONFIG_LOCAL" > $FILE
-      if [ -z "$SECURE" ]; then
-         echo "$CONFIG_STRICT_OFF_LOCAL" >> $FILE
-      else 
-         echo "$CONFIG_STRICT_ON" >> $FILE
-      fi
+
+   FILE=$NGINX_PATH/sites-available/$DOMAIN
+
+   if [ -f "$FILE" ]; then
+      # if file exists
+       echo "$FILE already exists. Skip nginx configuration."
    else
-      echo "$CONFIG_DOCKER" > $FILE
-      if [ -z "$SECURE" ]; then
-         echo "$CONFIG_STRICT_OFF_DOCKER" >> $FILE
-      else 
-         echo "$CONFIG_STRICT_ON" >> $FILE
+      # if file doesn't exists
+      echo "- adding temp configuration..."
+      echo "$CONFIG_TEMP" > $FILE
+      certbot certonly -d $DOMAIN --nginx
+      echo "- let's encrypt certificate generated."
+      rm $FILE
+      echo "- creating nginx configuration..."
+      if [ -z "$PORT" ]; then
+         echo "$CONFIG_LOCAL" > $FILE
+         if [ -z "$SECURE" ]; then
+            echo "$CONFIG_STRICT_OFF_LOCAL" >> $FILE
+         else 
+            echo "$CONFIG_STRICT_ON" >> $FILE
+         fi
+      else
+         echo "$CONFIG_DOCKER" > $FILE
+         if [ -z "$SECURE" ]; then
+            echo "$CONFIG_STRICT_OFF_DOCKER" >> $FILE
+         else 
+            echo "$CONFIG_STRICT_ON" >> $FILE
+         fi
       fi
+      if [ ! -z "$NAKED" ]; then
+         echo "$CONFIG_NAKED" >> $FILE
+      fi
+      ln -s $FILE $NGINX_PATH/sites-enabled
+      echo "- $DOMAIN was added successfully."
+      systemctl restart nginx
+      echo "- nginx restarted."
+      echo "- process complete."
    fi
-   if [ ! -z "$NAKED" ]; then
-      echo "$CONFIG_NAKED" >> $FILE
+
+else # remove action
+   FILE_FOUND=0
+
+   # remove file from sites-enabled
+   if [ -L "$NGINX_PATH/sites-enabled/$DOMAIN" ]; then
+      rm $NGINX_PATH/sites-enabled/$DOMAIN
+      echo "- removed from sites-enabled."
+      FILE_FOUND=1;
    fi
-   ln -s $FILE $NGINX_PATH/sites-enabled
-   echo "- $DOMAIN was added successfully."
-   systemctl restart nginx
-   echo "- nginx restarted."
-   echo "- process complete."
+   # remove file from sites-available
+   if [ -f "$NGINX_PATH/sites-available/$DOMAIN" ]; then
+      rm $NGINX_PATH/sites-available/$DOMAIN
+      echo "- removed from sites-available."
+      FILE_FOUND=1;
+   fi
+
+   # restart nginx
+   if [ $FILE_FOUND = 1 ]; then
+      # remove certificates
+      if [ -f "$LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem" ]; then
+         certbot delete --cert-name $DOMAIN
+         echo "- removed SSL certificates."
+      fi
+      echo "- restarting nginx..."
+      systemctl restart nginx
+   fi
+
+   echo "- process completed."
 fi
+
+
