@@ -26,7 +26,8 @@ Eg. vhost add -p 9001 -s www.somedomain.com
 **Language:** Bash<br>
 **Dependencies:** Git
 ```
-Look for git repositories in all subfolders and sync them with their remote. This script is intended for automated backups.
+Look for git repositories in all subfolders and sync them with their remote. 
+This script is intended for automated backups.
 ```
 <br>
 
