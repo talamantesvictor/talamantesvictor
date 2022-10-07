@@ -1,5 +1,5 @@
 # Victor's scripts
-All scripts on this repository were coded by and for Victor Talamantes. They are not meant to be used by others but you are free to use them if you find them useful.
+All scripts on this repository were coded by and for Victor Talamantes. They are not meant to be used by others but be free to do so if you find them useful.
 
 ### vhost
 **Language:** Bash<br>
@@ -19,6 +19,14 @@ Options:
    -s                Secure mode. Add redirect from port 80 to 443.
 
 Eg. vhost add -p 9001 -s www.somedomain.com
+```
+<br>
+
+### gitsync
+**Language:** Bash<br>
+**Dependencies:** Git
+```
+Look for git repositories in all subfolders and sync them with their remote. This script is intended for automated backups.
 ```
 <br>
 
