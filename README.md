@@ -55,6 +55,6 @@
 
 <br>
 
-> Now you know me a bit more :) <br>
+> Now you know my tech stack :) <br>
 I'm looking forward to collaborating with you! <br>
 \- Victor
