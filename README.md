@@ -8,7 +8,7 @@
     "description": "Software development company that primary focuses on mobile apps and video games"
   },
   "hobbies": [
-    "Learning new skills", "Watching movies", "Playing video games", "Other"
+    "Learning new skills", "Programming", "Watching movies", "Playing video games", "Other"
   ]
 }
 ```
