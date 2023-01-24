@@ -1,0 +1,47 @@
+body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: black;
+}
+
+#watch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 200px;
+    border: 2px solid cyan;
+    color: white;
+    border-radius: 50%;
+    font-family: monospace;
+    font-size: 1.7rem;
+    box-shadow: inset 0px 0px 20px 0px cyan;
+    position: relative;
+}
+
+#watch div {
+    position: absolute;
+    transform-origin: bottom;
+}
+
+#watch div#hours {
+    height: 25%;
+    top: 25%;
+    border: 2px solid orangered;
+}
+
+#watch div#minutes {
+    height: 35%;
+    top: 15%;
+    border: 2px solid orangered;
+}
+
+#watch div#seconds {
+    height: 40%;
+    top: 10%;
+    border: 1px solid cyan;
+}
