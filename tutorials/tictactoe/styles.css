@@ -1,0 +1,32 @@
+body {
+   width: 100vw;
+   height: 100vh;
+   background: black;
+   color: white;
+   font-family: "Courier New";
+   margin: 0;
+   display: grid;
+   place-items: center;
+   overflow: hidden;
+}
+
+#game .cell {
+   width: 90px;
+   height: 90px;
+   font-size: 3rem;
+   display: grid;
+   place-items: center;
+   border: 1px solid purple;
+   float: left;
+}
+
+#game {
+   width: 276px;
+   text-align: center;
+}
+
+#results {
+   position: relative;
+   top: 10px;
+   height: 1rem;
+}
