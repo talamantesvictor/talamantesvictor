@@ -23,6 +23,8 @@ function help {
    echo "   -s                Secure mode. Add redirect from port 80 to 443."
    echo ""
    echo "Eg. vhost add -p 9001 -s www.somedomain.com"
+   echo "    vhost add -n somedomain.com -s www.somedomain.com"
+   echo "    vhost remove www.somedomain.com"
 }
 
 # argument validation & handling
