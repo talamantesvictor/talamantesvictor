@@ -114,7 +114,7 @@ if [[ $ACTION == 'add' ]]; then
       ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
    }
    "
-   CONFIG_STRICT_OFF_DOCKER="
+   CONFIG_SECURE_OFF_DOCKER="
    server {
       server_name $DOMAIN;
       location / {
@@ -127,7 +127,7 @@ if [[ $ACTION == 'add' ]]; then
       listen 80;
    }
    "
-   CONFIG_STRICT_OFF_LOCAL="
+   CONFIG_SECURE_OFF_LOCAL="
    server {
       server_name $DOMAIN;
       root /var/www/$DOMAIN;
@@ -135,24 +135,18 @@ if [[ $ACTION == 'add' ]]; then
       listen 80;
    }
    "
-   CONFIG_STRICT_ON="
+   CONFIG_SECURE_ON="
    server {
       server_name $DOMAIN;
-      return 301 https://\$host\$request_uri;
+      return 301 https://$DOMAIN\$request_uri;
       listen 80;
    }
    "
    CONFIG_NAKED="
    server {
       server_name $NAKED;
-      return 301 https://www.\$host\$request_uri;
+      return 301 https://$DOMAIN\$request_uri;
       listen 80;
-      listen 443;
-
-      ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
-      ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
-      include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
-      ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
    }
    "
 
@@ -172,16 +166,16 @@ if [[ $ACTION == 'add' ]]; then
       if [ -z "$PORT" ]; then
          echo "$CONFIG_LOCAL" > $FILE
          if [ -z "$SECURE" ]; then
-            echo "$CONFIG_STRICT_OFF_LOCAL" >> $FILE
+            echo "$CONFIG_SECURE_OFF_LOCAL" >> $FILE
          else 
-            echo "$CONFIG_STRICT_ON" >> $FILE
+            echo "$CONFIG_SECURE_ON" >> $FILE
          fi
       else
          echo "$CONFIG_DOCKER" > $FILE
          if [ -z "$SECURE" ]; then
-            echo "$CONFIG_STRICT_OFF_DOCKER" >> $FILE
+            echo "$CONFIG_SECURE_OFF_DOCKER" >> $FILE
          else 
-            echo "$CONFIG_STRICT_ON" >> $FILE
+            echo "$CONFIG_SECURE_ON" >> $FILE
          fi
       fi
       if [ ! -z "$NAKED" ]; then
