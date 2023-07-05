@@ -22,6 +22,15 @@ body {
    justify-content: center;
 }
 
+#stats {
+   color: white;
+   position: absolute;
+   padding: 1rem;
+   text-align: center;
+   width: calc(100% - 2rem);
+   font-size: 3rem;
+}
+
 .card {
    width: 100px;
    height: 140px;
@@ -48,12 +57,13 @@ body {
 }
 
 .card .face {
-   background: purple;
+   background: #05d1fe;
    transform: rotateY( 180deg );
-   color: white;
+   color: black;
    font-size: 6rem;
 }
 
 .card .back {
-   border: 2px solid purple;
+   border: 3px solid #05d1fe;
+   background: url(images/back.png) center / contain no-repeat;
 }
