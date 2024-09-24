@@ -22,6 +22,28 @@ Eg. vhost add -p 9001 -s www.somedomain.com
 ```
 <br>
 
+### caddyhost
+**Language:** Bash  
+**Dependencies:** Caddy, systemctl
+
+```
+Usage: caddyhost <action> [options...] <target_domain>
+Add or remove Caddy server configuration files for the domain specified, supporting automatic SSL (handled by Caddy).
+
+Actions:
+   add               Add the configuration files.
+   remove            Remove the configuration files.
+
+Options:
+   -p {port}         Docker port to be used for reverse proxy. Default: filesystem.
+   -n {naked_domain} Add redirect of naked_domain to target_domain.
+
+Eg. caddyhost add -p 9001 www.somedomain.com
+    caddyhost add -n somedomain.com www.somedomain.com
+    caddyhost remove www.somedomain.com
+```
+<br>
+
 ### gitsync
 **Language:** Bash<br>
 **Dependencies:** Git
