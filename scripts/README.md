@@ -2,23 +2,28 @@
 All scripts on this repository were coded by and for Victor Talamantes. They are not meant to be used by others but be free to do so if you find them useful.
 
 ### vhost
-**Language:** Bash<br>
+**Language:** Bash  
 **Dependencies:** Nginx, certbot, systemctl
+
 ```
-Usage: vhost <action> [options...] <target_domain>
-Add or remove Nginx server configuration files for the domain specified
-and automatically generates an SSL certificate using certbot.
+Usage: vhost <action> [options...] <target_domain>  
+Add or remove Nginx server configuration files for the domain specified, and automatically generate an SSL certificate using certbot.
 
 Actions:
    add               Add the configuration files and SSL certificate.
    remove            Remove the configuration files and SSL certificate.
 
 Options:
-   -p {port}         Docker port to be used. Default: None, filesystem.
+   -p {port}         Docker port to be used for reverse proxy. Default: filesystem.
    -n {naked_domain} Add redirect of naked_domain to target_domain.
    -s                Secure mode. Add redirect from port 80 to 443.
+   -a                Enable Angular/SPA mode for path handling (only for filesystem, not Docker).
 
-Eg. vhost add -p 9001 -s www.somedomain.com
+Eg.  
+   vhost add -p 9001 -s www.somedomain.com  
+   vhost add -n somedomain.com -s www.somedomain.com  
+   vhost add -a www.angularapp.com  
+   vhost remove www.somedomain.com
 ```
 <br>
 
@@ -27,7 +32,7 @@ Eg. vhost add -p 9001 -s www.somedomain.com
 **Dependencies:** Caddy, systemctl
 
 ```
-Usage: caddyhost <action> [options...] <target_domain>
+Usage: caddyhost <action> [options...] <target_domain>  
 Add or remove Caddy server configuration files for the domain specified, supporting automatic SSL (handled by Caddy).
 
 Actions:
@@ -37,10 +42,13 @@ Actions:
 Options:
    -p {port}         Docker port to be used for reverse proxy. Default: filesystem.
    -n {naked_domain} Add redirect of naked_domain to target_domain.
+   -a                Enable Angular/SPA mode for path handling (only for filesystem, not Docker).
 
-Eg. caddyhost add -p 9001 www.somedomain.com
-    caddyhost add -n somedomain.com www.somedomain.com
-    caddyhost remove www.somedomain.com
+Eg.  
+   caddyhost add -p 9001 www.somedomain.com  
+   caddyhost add -n somedomain.com www.somedomain.com  
+   caddyhost add -a www.angularapp.com  
+   caddyhost remove www.somedomain.com
 ```
 <br>
 

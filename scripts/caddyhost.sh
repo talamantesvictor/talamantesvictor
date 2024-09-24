@@ -11,21 +11,24 @@ function help {
    echo "Add or remove Caddy server configuration files for the domain specified"
    echo ""
    echo "Actions:"
-   echo "   add               Add the configuration files with automatic SSL."
+   echo "   add               Add the configuration files."
    echo "   remove            Remove the configuration files."
    echo ""
    echo "Options:"
-   echo "   -p {port}         Docker port to be used. Default: 80 for HTTP."
+   echo "   -p {port}         Docker port to be used for reverse proxy. Default: filesystem."
    echo "   -n {naked_domain} Add redirect of naked_domain to target_domain."
+   echo "   -a                Enable Angular/SPA mode for path handling (only for filesystem, not Docker)."
    echo ""
    echo "Eg. caddyhost add -p 9001 www.somedomain.com"
    echo "    caddyhost add -n somedomain.com www.somedomain.com"
+   echo "    caddyhost add -a www.angularapp.com"
    echo "    caddyhost remove www.somedomain.com"
 }
 
 # Argument validation & handling
 # ------------------------------
 BADARGS=0
+SPA_MODE=0
 if [[ ${#} -lt 2 ]]; then
    BADARGS=1
 fi
@@ -48,7 +51,7 @@ fi
 
 if [[ $ACTION == 'add' ]]; then
    # Read options
-   optstring="p:n:"
+   optstring="p:n:a"
    shift
    while getopts ${optstring} option; do
       OPTIND=1
@@ -56,23 +59,36 @@ if [[ $ACTION == 'add' ]]; then
       case "${option}" in
          p) PORT=$1; shift;;
          n) NAKED=$1; shift;;
+         a) SPA_MODE=1;;  # Activate SPA mode for Angular/SPA (only for filesystem)
          ?) help;;
       esac
    done
 
-   # Caddyfile templates
+   # Caddyfile templates for reverse proxy (Docker)
    CONFIG_DOCKER="
    $DOMAIN {
       reverse_proxy localhost:$PORT
    }
    "
 
+   # Local configuration for static files (filesystem)
    CONFIG_LOCAL="
    $DOMAIN {
       root * /var/www/$DOMAIN
       file_server
    }
    "
+
+   # SPA mode (only for filesystem, not Docker)
+   if [[ $SPA_MODE -eq 1 && -z "$PORT" ]]; then
+      CONFIG_LOCAL="
+      $DOMAIN {
+         root * /var/www/$DOMAIN
+         file_server
+         try_files {path} /index.html
+      }
+      "
+   fi
 
    CONFIG_NAKED="
    $NAKED {

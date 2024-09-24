@@ -1,5 +1,5 @@
 #!/bin/bash
-# Easily add server configurations to nginx and generate an SSL certificate.
+# Easily add server configurations to Nginx and generate an SSL certificate.
 # Dependencies:
 # - nginx
 # - certbot
@@ -7,6 +7,7 @@
 
 NGINX_PATH=/etc/nginx
 LETSENCRYPT_PATH=/etc/letsencrypt
+SPA_MODE=0
 
 function help {
    echo "Usage: vhost <action> [options...] <target_domain>" 
@@ -21,27 +22,23 @@ function help {
    echo "   -p {port}         Docker port to be used. Default: None, filesystem."
    echo "   -n {naked_domain} Add redirect of naked_domain to target_domain."
    echo "   -s                Secure mode. Add redirect from port 80 to 443."
+   echo "   -a                Enable Angular/SPA mode for path handling (only for filesystem, not Docker)."
    echo ""
    echo "Eg. vhost add -p 9001 -s www.somedomain.com"
    echo "    vhost add -n somedomain.com -s www.somedomain.com"
    echo "    vhost remove www.somedomain.com"
 }
 
-# argument validation & handling
+# Argument validation & handling
 # ------------------------------
 
 BADARGS=0
-# two arguments minimum
 if [[ ${#} -lt 2 ]]; then
    BADARGS=1
 fi
-# first argument should be add | remove
-if [[ $1 != 'add' ]]; then
-   if [[ $1 != 'remove' ]]; then
-      BADARGS=1
-   fi
+if [[ $1 != 'add' && $1 != 'remove' ]]; then
+   BADARGS=1
 fi
-# if any argument is incorrect
 if [[ $BADARGS -eq 1 ]]; then
    help
    exit 1
@@ -50,17 +47,15 @@ fi
 ACTION=$1
 DOMAIN=${@: -1}
 
-
 if [ -z "$DOMAIN" ]; then
    help
    echo "target domain is missing."
    exit 1;
 fi
 
-
 if [[ $ACTION == 'add' ]]; then
    # read options and show help if any doesn't belong to the script
-   optstring="p:n:s"
+   optstring="p:n:sa"
    shift
    while getopts ${optstring} option; do
       OPTIND=1
@@ -68,22 +63,13 @@ if [[ $ACTION == 'add' ]]; then
       case "${option}" in
          p) PORT=$1; shift;;
          n) NAKED=$1; shift;;
-         s) SECURE=$1; shift;;
+         s) SECURE=1;;
+         a) SPA_MODE=1;;  # Enable SPA mode only for filesystem
          ?) help;;
       esac
    done
 
-   # nginx templates
-   # ---------------
-
-   CONFIG_TEMP="
-   server {
-      server_name $DOMAIN;
-      root /var/www/404;
-      index index.html
-      listen 80;
-   }
-   "
+   # nginx templates for reverse proxy (Docker)
    CONFIG_DOCKER="
    server {
       server_name $DOMAIN;
@@ -101,19 +87,43 @@ if [[ $ACTION == 'add' ]]; then
       ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
    }
    "
+
+   # Standard local configuration for static files (filesystem)
    CONFIG_LOCAL="
    server {
       server_name $DOMAIN;
       root /var/www/$DOMAIN;
       index index.html;
-      
+
       listen 443 ssl; # managed by Certbot
       ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
       ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
       include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
-      ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem; 
+      ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem;
    }
    "
+
+   # SPA configuration with try_files (only for filesystem)
+   if [[ $SPA_MODE -eq 1 && -z "$PORT" ]]; then
+      CONFIG_LOCAL="
+      server {
+         server_name $DOMAIN;
+         root /var/www/$DOMAIN;
+         index index.html;
+
+         location / {
+            try_files \$uri \$uri/ /index.html?\$args;
+         }
+
+         listen 443 ssl; # managed by Certbot
+         ssl_certificate $LETSENCRYPT_PATH/live/$DOMAIN/fullchain.pem; 
+         ssl_certificate_key $LETSENCRYPT_PATH/live/$DOMAIN/privkey.pem; 
+         include $LETSENCRYPT_PATH/options-ssl-nginx.conf; 
+         ssl_dhparam $LETSENCRYPT_PATH/ssl-dhparams.pem;
+      }
+      "
+   fi
+
    CONFIG_SECURE_OFF_DOCKER="
    server {
       server_name $DOMAIN;
@@ -217,5 +227,3 @@ else # remove action
 
    echo "- process completed."
 fi
-
-
