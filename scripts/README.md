@@ -1,5 +1,5 @@
 # Victor's scripts
-All scripts on this repository were coded by and for Victor Talamantes. They are not meant to be used by others but be free to do so if you find them useful.
+All scripts on this repository were coded by and for Victor Talamantes. They are not meant to be used by others but be free to do so, under your own risk, if you find them useful.
 
 ### vhost
 **Language:** Bash  
