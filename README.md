@@ -14,6 +14,11 @@
 ```
 ---
 
+| URL                              | Description                          |
+| -------------                    | -----------                          |
+| https://www.victortalamantes.com | Personal blog (spanish)              |
+| https://www.binmatter.com        | Apps and videogames company          |
+
 #### Languages I use to develop
 [![My Skills](https://skillicons.dev/icons?i=html)](https://en.wikipedia.org/wiki/HTML)
 [![My Skills](https://skillicons.dev/icons?i=js)](https://en.wikipedia.org/wiki/JavaScript)
@@ -48,10 +53,6 @@
 [![My Skills](https://skillicons.dev/icons?i=neovim)](https://neovim.io)
 [![My Skills](https://skillicons.dev/icons?i=vscode)](https://code.visualstudio.com)
 
-
-#### Operating Systems
-[![My Skills](https://skillicons.dev/icons?i=linux)](https://en.wikipedia.org/wiki/Linux) <br>
-... and the others of course.
 
 <br>
 
