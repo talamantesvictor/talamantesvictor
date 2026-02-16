@@ -54,10 +54,22 @@ Eg.
 
 ### gitsync
 **Language:** Bash<br>
-**Dependencies:** Git
+**Dependencies:** Git, gh (GitHub CLI), jq
 ```
-Look for git repositories in all subfolders and sync them with their remote. 
-This script is intended for automated backups.
+Usage: gitsync [options...] <target_directory>
+Synchronize GitHub repositories to a local directory or server. Supports auto-discovery of new repositories via GitHub API and backup mirroring.
+
+Options:
+  -o {org_name}   GitHub Organization or User name (Required for auto-discovery).
+  -l              Local mode: Only sync repositories already present in target_directory.
+  -m              Mirror mode: Clone/Sync as bare repositories (ideal for pure backups).
+  -A              Include archived repositories (Disabled by default).
+
+Eg.
+  gitsync -o my-company /var/www/projects
+  gitsync -o my-company -m /home/backup/github_mirror
+  gitsync -l /home/dev/my-repos
+  gitsync -o my-company -A -m /full-archive
 ```
 <br>
 
